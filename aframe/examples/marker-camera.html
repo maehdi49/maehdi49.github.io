@@ -10,9 +10,16 @@
 </div>
 	<!-- <a-scene embedded arjs='sourceType: image; sourceUrl:../../data/images/armchair.jpg;'> -->
 	<a-scene embedded arjs='sourceType: webcam;'>
-
-		<a-entity gltf-model-next="src: url(../../data/data/cube.gltf);" ></a-entity>
-
+	
+		  <a-assets>
+			<a-asset-item id="mymodel" src="../../data/data/cube.gltf"></a-asset-item>
+		  </a-assets>
+		  
+		  
+		<a-box position='0 0.5 0' material='opacity: 0.5; side: double;color:blue;'> </a-box>
+		
+		<a-gltf-model src="../../data/data/cube.gltf"></a-gltf-model>
+		
 		<a-marker-camera preset='hiro'></a-marker-camera>
 	</a-scene>
 </body>

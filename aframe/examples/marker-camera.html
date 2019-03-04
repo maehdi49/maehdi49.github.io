@@ -11,12 +11,16 @@
 	<!-- <a-scene embedded arjs='sourceType: image; sourceUrl:../../data/images/armchair.jpg;'> -->
 	<a-scene embedded arjs='sourceType: webcam;'>
 
+<!-- 		<a-entity gltf-model="src: url(../../data/data/AnimatedMorphSphere.gltf);" scale="0.01 0.01 0.01"></a-entity>
 		<a-assets>
 			<a-asset-item id="myCoube" src="../../data/data/AnimatedMorphSphere.gltf" ></a-asset-item>
 		</a-assets>
 		  
 		
-		<a-gltf-model src="#myCoube"></a-gltf-model>
+		<a-gltf-model src="#myCoube"></a-gltf-model> -->
+		
+		<a-asset-item id="skull-model" src="https://dl.dropboxusercontent.com/s/dvahjq5trg9pysj/evil-skull.gltf" crossOrigin="anonymous"></a-asset-item></a-assets>
+		<a-gltf-model src="#skull-model" position="0 2 -3"></a-gltf-model>
 		
 		<a-marker-camera preset='hiro'></a-marker-camera>
 	</a-scene>

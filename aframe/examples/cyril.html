@@ -11,21 +11,14 @@
 	<!-- <a-scene embedded arjs='sourceType: image; sourceUrl:../../data/images/armchair.jpg;'> -->
 	<a-scene embedded arjs='sourceType: webcam;'>
 
-<!--		<a-assets>
-            <a-asset-item id="animated-asset" src="https://raw.githubusercontent.com/nicolocarpignoli/nicolocarpignoli.github.io/master/ar-playground/models/CesiumMan.gltf"></a-asset-item>
-        </a-assets>
-
-        <a-marker type='barcode' value='7'>
-            <a-box position='0 0.5 0' color="red"></a-box>
-        </a-marker>
-
-        <a-marker markerhandler emitevents="true" cursor="fuse: false; rayOrigin: mouse" id="animated-marker" type='barcode' value='6'>
-            <a-entity
-                id="animated-model"
-                gltf-model="#animated-asset"
-                scale="2">
-            </a-entity>
-        </a-marker> -->
+<!-- 		<a-entity gltf-model="src: url(../../data/data/AnimatedMorphSphere.gltf);" scale="0.01 0.01 0.01"></a-entity>
+		<a-assets>
+			<a-asset-item id="myCoube" src="../../data/data/AnimatedMorphSphere.gltf" ></a-asset-item>
+		</a-assets> -->
+	
+		<a-assets><a-asset-item id="skull-model" src="../../data/data/cube-rouge.gltf" crossOrigin="anonymous"></a-asset-item></a-assets> 
+		
+		<a-gltf-model src="#skull-model" position="0 0.5 0" ></a-gltf-model> 
 		
 		<a-marker-camera preset='hiro'></a-marker-camera>
 	</a-scene>

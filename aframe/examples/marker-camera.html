@@ -11,11 +11,11 @@
 	<!-- <a-scene embedded arjs='sourceType: image; sourceUrl:../../data/images/armchair.jpg;'> -->
 	<a-scene embedded arjs='sourceType: webcam;'>
 
-
-		<a-marker type='pattern' preset='hiro'>
+		<a-scene embedded arjs='sourceType: webcam;'>
 			<a-gltf-model src="https://khaled44000.github.io/mspr_espi44/blender/rino.gltf" scale="0.37 0.37 0.37" position="0 0.75 0" >
 			</a-gltf-model>
-		</a-marker>
+			<a-marker-camera preset='hiro'></a-marker-camera>
+		</a-scene>
 		<div> commit </div>
 	</a-scene>
 </body>

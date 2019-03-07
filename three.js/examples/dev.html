@@ -15,22 +15,24 @@
 <script src='../src/threex/threex-arsmoothedcontrols.js'></script>
 <script>THREEx.ArToolkitContext.baseURL = '../'</script>
 
-<body style='margin : 0px; overflow: hidden; font-family: Monospace;'><div style='position: absolute; top: 10px; width:100%; text-align: center;z-index:1';>
-	<a href='https://github.com/jeromeetienne/AR.js/' target='_blank'>AR.js</a> - developement playground
-	<br/>
-	Contact me any time at <a href='https://twitter.com/jerome_etienne' target='_blank'>@jerome_etienne</a>
-</div><script>
-	//////////////////////////////////////////////////////////////////////////////////
-	//		Init
-	//////////////////////////////////////////////////////////////////////////////////
+<script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>
+<script src="//cdn.rawgit.com/donmccurdy/aframe-extras/v4.1.2/dist/aframe-extras.min.js"></script>
+<script src="https://jeromeetienne.github.io/AR.js/aframe/build/aframe-ar.js"></script>
 
+
+<body style='margin : 0px; overflow: hidden; font-family: Monospace;'><div style='position: absolute; top: 10px; width:100%; text-align: center; z-index: 1;'>
+	<a href="https://github.com/jeromeetienne/AR.js/" target="_blank">AR.js</a> - three.js mobile performance
+	<br/>
+	Contact me any time at <a href='https://twitter.com/jerome_etienne' target='_blank'>@maehdiMapoule</a>
+	<span class="toto" >test</span>  
+	</div><script>
 	// init renderer
 	var renderer	= new THREE.WebGLRenderer({
 		// antialias	: true,
 		alpha: true
 	});
 	renderer.setClearColor(new THREE.Color('lightgrey'), 0)
-	// renderer.setPixelRatio( 2 );
+	// renderer.setPixelRatio( 1/2 );
 	renderer.setSize( window.innerWidth, window.innerHeight );
 	renderer.domElement.style.position = 'absolute'
 	renderer.domElement.style.top = '0px'
@@ -42,13 +44,6 @@
 
 	// init scene and camera
 	var scene	= new THREE.Scene();
-
-	var ambient = new THREE.AmbientLight( 0x666666 );
-	scene.add( ambient );
-
-	var directionalLight = new THREE.DirectionalLight( 0x887766 );
-	directionalLight.position.set( -1, 1, 1 ).normalize();
-	scene.add( directionalLight );
 	
 	//////////////////////////////////////////////////////////////////////////////////
 	//		Initialize a basic camera
@@ -66,10 +61,9 @@
 		// to read from the webcam 
 		sourceType : 'webcam',
 
-		// // to read from an image
+		// to read from an image
 		// sourceType : 'image',
 		// sourceUrl : THREEx.ArToolkitContext.baseURL + '../data/images/img.jpg',		
-		// sourceUrl : THREEx.ArToolkitContext.baseURL + '../data/images/armchair.jpg',		
 
 		// to read from a video
 		// sourceType : 'video',
@@ -85,30 +79,24 @@
 		onResize()
 	})
 	function onResize(){
-		arToolkitSource.onResizeElement()	
-		arToolkitSource.copyElementSizeTo(renderer.domElement)	
+		arToolkitSource.onResize()	
+		arToolkitSource.copySizeTo(renderer.domElement)	
 		if( arToolkitContext.arController !== null ){
-			arToolkitSource.copyElementSizeTo(arToolkitContext.arController.canvas)	
+			arToolkitSource.copySizeTo(arToolkitContext.arController.canvas)	
 		}	
 	}
-
 	////////////////////////////////////////////////////////////////////////////////
 	//          initialize arToolkitContext
-	////////////////////////////////////////////////////////////////////////////////	
+	////////////////////////////////////////////////////////////////////////////////
+	
 
 	// create atToolkitContext
 	var arToolkitContext = new THREEx.ArToolkitContext({
-		cameraParametersUrl: THREEx.ArToolkitContext.baseURL + '../data/data/camera_para.dat',
-		// debug: true,
-		// detectionMode: 'mono_and_matrix',
+		cameraParametersUrl: '../../data/data/camera_para.dat',
 		detectionMode: 'mono',
-		// detectionMode: 'color_and_matrix',
-		// matrixCodeType: '3x3',
-
+		maxDetectionRate: 30,
 		canvasWidth: 80*3,
 		canvasHeight: 60*3,
-
-		maxDetectionRate: 30,
 	})
 	// initialize it
 	arToolkitContext.init(function onCompleted(){
@@ -122,22 +110,37 @@
 
 		arToolkitContext.update( arToolkitSource.domElement )
 	})
-
+	
 	
 	////////////////////////////////////////////////////////////////////////////////
 	//          Create a ArMarkerControls
 	////////////////////////////////////////////////////////////////////////////////
-	
+		
+	var textureLoader = new THREE.TextureLoader();
+	var texture = textureLoader.load( 'https://maehdi49.github.io/data/images/qrcode-in-marker.png' );
+	texture.flipY = false;
+
+	var loader = new THREE.GLTFLoader();
+	loader.load( 'https://maehdi49.github.io/data/data/vache.gltf', ( gltf ) => {
+	  var model = gltf.scene;
+	  model.traverse ( ( o ) => {
+		if ( o.isMesh ) {
+		  // note: for a multi-material mesh, `o.material` may be an array,
+		  // in which case you'd need to set `.map` on each value.
+		  o.material.map = texture;
+		}
+	  } );
+	  scene.add( model );
+	} );
+
+
 	var markerRoot = new THREE.Group
 	scene.add(markerRoot)
-	var markerControls = new THREEx.ArMarkerControls(arToolkitContext, markerRoot, {
-		// type: 'barcode',
-		// barcodeValue: 5,
-		
+	var artoolkitMarker = new THREEx.ArMarkerControls(arToolkitContext, markerRoot, {
 		type : 'pattern',
-		patternUrl : THREEx.ArToolkitContext.baseURL + 'examples/marker-training/examples/pattern-files/pattern-hiro.patt',
+		patternUrl : THREEx.ArToolkitContext.baseURL + '../data/data/patt.epsi' 
+		// patternUrl : THREEx.ArToolkitContext.baseURL + '../data/data/patt.kanji'
 	})
-
 
 	// build a smoothedControls
 	var smoothedRoot = new THREE.Group()
@@ -146,52 +149,35 @@
 		lerpPosition: 0.4,
 		lerpQuaternion: 0.3,
 		lerpScale: 1,
-		// minVisibleDelay: 1,
-		// minUnvisibleDelay: 1,
 	})
 	onRenderFcts.push(function(delta){
 		smoothedControls.update(markerRoot)
-	})	
-	
-	// smoothedControls.addEventListener('becameVisible', function(){
-	// 	console.log('becameVisible event notified')
-	// })
-	// smoothedControls.addEventListener('becameUnVisible', function(){
-	// 	console.log('becameUnVisible event notified')
-	// })
-
+	})
 	//////////////////////////////////////////////////////////////////////////////////
 	//		add an object in the scene
 	//////////////////////////////////////////////////////////////////////////////////
 
-	// var arWorldRoot = markerRoot
 	var arWorldRoot = smoothedRoot
 
-	var mesh = new THREE.AxisHelper()
-	// markerRoot.add(mesh)
-	arWorldRoot.add(mesh)
-
-	// add a torus knot
+	// add a torus knot	
 	var geometry	= new THREE.CubeGeometry(1,1,1);
 	var material	= new THREE.MeshNormalMaterial({
 		transparent : true,
 		opacity: 0.5,
 		side: THREE.DoubleSide
-	})
+	}); 
 	var mesh	= new THREE.Mesh( geometry, material );
 	mesh.position.y	= geometry.parameters.height/2
-	// markerRoot.add( mesh );
-	arWorldRoot.add(mesh)
+	arWorldRoot.add( mesh );
 	
 	var geometry	= new THREE.TorusKnotGeometry(0.3,0.1,64,16);
 	var material	= new THREE.MeshNormalMaterial(); 
 	var mesh	= new THREE.Mesh( geometry, material );
 	mesh.position.y	= 0.5
-	// markerRoot.add( mesh );
 	arWorldRoot.add( mesh );
 	
-	onRenderFcts.push(function(delta){
-		mesh.rotation.x += delta * Math.PI
+	onRenderFcts.push(function(){
+		mesh.rotation.x += 0.1
 	})
 
 	//////////////////////////////////////////////////////////////////////////////////
@@ -219,4 +205,5 @@
 			onRenderFct(deltaMsec/1000, nowMsec/1000)
 		})
 	})
-</script></body>
+</script><div>Lache un like frere </div></body>
+

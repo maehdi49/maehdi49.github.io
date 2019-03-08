@@ -1,195 +1,103 @@
-<!DOCTYPE html>
-<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-<!-- three.js library -->
-<script src='vendor/three.js/build/three.min.js'></script>
-<script src="vendor/three.js/examples/js/libs/stats.min.js"></script>
-<!-- ar.js -->
-<script src="../build/ar.js"></script>
-<script>THREEx.ArToolkitContext.baseURL = '../'</script>
+<canvas id="c"></canvas>
+<style>
+body {
+	margin: 0;
+}
+#c {
+	width: 100vw;
+	height: 100vh;
+	display: block;
+}
+    
+</style>
+<script src="https://threejsfundamentals.org/threejs/resources/threejs/r102/three.min.js"></script>
+<script src="https://maehdi49.github.io/three.js/examples/vendor/three.js/examples/js/loaders/GLTFLoader.js"></script>
 
-<body style='margin : 0px; overflow: hidden; font-family: Monospace;'><div style='position: absolute; top: 10px; width:100%; text-align: center; z-index: 1;'>
-	<a href="https://github.com/jeromeetienne/AR.js/" target="_blank">AR.js</a> - three.js mobile performance
-	<br/>
-	Contact me any time at <a href='https://twitter.com/jerome_etienne' target='_blank'>@maehdiMapoule</a>
-	<span class="toto" >test</span>  
-	</div><script>
-	// init renderer
-	var renderer	= new THREE.WebGLRenderer({
-		// antialias	: true,
-		alpha: true
-	});
-	renderer.setClearColor(new THREE.Color('lightgrey'), 0)
-	// renderer.setPixelRatio( 1/2 );
-	renderer.setSize( window.innerWidth, window.innerHeight );
-	renderer.domElement.style.position = 'absolute'
-	renderer.domElement.style.top = '0px'
-	renderer.domElement.style.left = '0px'
-	document.body.appendChild( renderer.domElement );
+<script>
+'use strict';
+// Code original : https://threejsfundamentals.org/threejs/lessons/threejs-textures.html
 
-	// array of functions for the rendering loop
-	var onRenderFcts= [];
 
-	// init scene and camera
-	var scene	= new THREE.Scene();
-	
-	//////////////////////////////////////////////////////////////////////////////////
-	//		Initialize a basic camera
-	//////////////////////////////////////////////////////////////////////////////////
+/* global THREE */
 
-	// Create a camera
-	var camera = new THREE.Camera();
-	scene.add(camera);
+function main() {
+  const canvas = document.querySelector('#c');
+  const renderer = new THREE.WebGLRenderer({canvas: canvas});
 
-	////////////////////////////////////////////////////////////////////////////////
-	//          handle arToolkitSource
-	////////////////////////////////////////////////////////////////////////////////
+  const fov = 75;
+  const aspect = 2;  // the canvas default
+  const near = 0.1;
+  const far = 5;
+  const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+  camera.position.z = 2;
 
-	var arToolkitSource = new THREEx.ArToolkitSource({
-		// to read from the webcam 
-		sourceType : 'webcam',
+  const scene = new THREE.Scene();
 
-		// to read from an image
-		// sourceType : 'image',
-		// sourceUrl : THREEx.ArToolkitContext.baseURL + '../data/images/img.jpg',		
+  const boxWidth = 1;
+  const boxHeight = 1;
+  const boxDepth = 1;
+  const geometry = new THREE.BoxGeometry(boxWidth, boxHeight, boxDepth);
 
-		// to read from a video
-		// sourceType : 'video',
-		// sourceUrl : THREEx.ArToolkitContext.baseURL + '../data/videos/headtracking.mp4',		
-	})
+  const cubes = [];  // just an array we can use to rotate the cubes
+  const loader = new THREE.TextureLoader();
 
-	arToolkitSource.init(function onReady(){
-		onResize()
-	})
-	
-	// handle resize
-	window.addEventListener('resize', function(){
-		onResize()
-	})
-	function onResize(){
-		arToolkitSource.onResize()	
-		arToolkitSource.copySizeTo(renderer.domElement)	
-		if( arToolkitContext.arController !== null ){
-			arToolkitSource.copySizeTo(arToolkitContext.arController.canvas)	
-		}	
-	}
-	////////////////////////////////////////////////////////////////////////////////
-	//          initialize arToolkitContext
-	////////////////////////////////////////////////////////////////////////////////
-	
-
-	// create atToolkitContext
-	var arToolkitContext = new THREEx.ArToolkitContext({
-		cameraParametersUrl: '../../data/data/camera_para.dat',
-		detectionMode: 'mono',
-		maxDetectionRate: 30,
-		canvasWidth: 80*3,
-		canvasHeight: 60*3,
-	})
-	// initialize it
-	arToolkitContext.init(function onCompleted(){
-		// copy projection matrix to camera
-		camera.projectionMatrix.copy( arToolkitContext.getProjectionMatrix() );
-	})
-
-	// update artoolkit on every frame
-	onRenderFcts.push(function(){
-		if( arToolkitSource.ready === false )	return
-
-		arToolkitContext.update( arToolkitSource.domElement )
-	})
-	
-	
-	////////////////////////////////////////////////////////////////////////////////
-	//          Create a ArMarkerControls
-	////////////////////////////////////////////////////////////////////////////////
+  const material = new THREE.MeshBasicMaterial({
+    map: loader.load('https://threejsfundamentals.org/threejs/resources/images/wall.jpg'),
+  });
+  
+  
+	// Début des modifs mehdi : a la place du cube j'ai essayé de charger le gltf 
+	var manager = new THREE.LoadingManager();
+	var cube = new THREE.GLTFLoader();
+	cube.load( 'https://maehdi49.github.io/data/data/cube.gltf', ( gltf ) => {
+		var model = gltf.scene;
+		scene.add( model );
+		cubes.push(cube);  // add to our list of cubes to rotate
 		
-	var textureLoader = new THREE.TextureLoader();
-	var texture = textureLoader.load( 'https://maehdi49.github.io/data/images/qrcode-in-marker.png' );
-	texture.flipY = false;
-
-	var loader = new THREE.GLTFLoader();
-	loader.load( 'https://maehdi49.github.io/data/data/vache.gltf', ( gltf ) => {
-	  var model = gltf.scene;
-	  model.traverse ( ( o ) => {
-		if ( o.isMesh ) {
-		  // note: for a multi-material mesh, `o.material` may be an array,
-		  // in which case you'd need to set `.map` on each value.
-		  o.material.map = texture;
-		}
-	  } );
-	  scene.add( model );
+		console.log(gltf.scene);
+		console.log(gltf);
+		console.log("toto");
+		console.log(cube);
+		model.traverse((node) => {
+			if (node.isMesh	) {
+				node.material.envMap = ibl_texture;
+			}
+			debugger;
+		});
 	} );
+  
+	// Fin modif .
 
 
-	var markerRoot = new THREE.Group
-	scene.add(markerRoot)
-	var artoolkitMarker = new THREEx.ArMarkerControls(arToolkitContext, markerRoot, {
-		type : 'pattern',
-		patternUrl : THREEx.ArToolkitContext.baseURL + '../data/data/patt.epsi' 
-		// patternUrl : THREEx.ArToolkitContext.baseURL + '../data/data/patt.kanji'
-	})
+  function resizeRendererToDisplaySize(renderer) {
+    const canvas = renderer.domElement;
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+    const needResize = canvas.width !== width || canvas.height !== height;
+    if (needResize) {
+      renderer.setSize(width, height, false);
+    }
+    return needResize;
+  }
 
-	// build a smoothedControls
-	var smoothedRoot = new THREE.Group()
-	scene.add(smoothedRoot)
-	var smoothedControls = new THREEx.ArSmoothedControls(smoothedRoot, {
-		lerpPosition: 0.4,
-		lerpQuaternion: 0.3,
-		lerpScale: 1,
-	})
-	onRenderFcts.push(function(delta){
-		smoothedControls.update(markerRoot)
-	})
-	//////////////////////////////////////////////////////////////////////////////////
-	//		add an object in the scene
-	//////////////////////////////////////////////////////////////////////////////////
+  function render(time) {
+    time *= 0.001;
 
-	var arWorldRoot = smoothedRoot
+    if (resizeRendererToDisplaySize(renderer)) {
+      const canvas = renderer.domElement;
+      camera.aspect = canvas.clientWidth / canvas.clientHeight;
+      camera.updateProjectionMatrix();
+    }
 
-	// add a torus knot	
-	var geometry	= new THREE.CubeGeometry(1,1,1);
-	var material	= new THREE.MeshNormalMaterial({
-		transparent : true,
-		opacity: 0.5,
-		side: THREE.DoubleSide
-	}); 
-	var mesh	= new THREE.Mesh( geometry, material );
-	mesh.position.y	= geometry.parameters.height/2
-	arWorldRoot.add( mesh );
-	
-	var geometry	= new THREE.TorusKnotGeometry(0.3,0.1,64,16);
-	var material	= new THREE.MeshNormalMaterial(); 
-	var mesh	= new THREE.Mesh( geometry, material );
-	mesh.position.y	= 0.5
-	arWorldRoot.add( mesh );
-	
-	onRenderFcts.push(function(){
-		mesh.rotation.x += 0.1
-	})
 
-	//////////////////////////////////////////////////////////////////////////////////
-	//		render the whole thing on the page
-	//////////////////////////////////////////////////////////////////////////////////
-	var stats = new Stats();
-	document.body.appendChild( stats.dom );
-	// render the scene
-	onRenderFcts.push(function(){
-		renderer.render( scene, camera );
-		stats.update();
-	})
+    renderer.render(scene, camera);
 
-	// run the rendering loop
-	var lastTimeMsec= null
-	requestAnimationFrame(function animate(nowMsec){
-		// keep looping
-		requestAnimationFrame( animate );
-		// measure time
-		lastTimeMsec	= lastTimeMsec || nowMsec-1000/60
-		var deltaMsec	= Math.min(200, nowMsec - lastTimeMsec)
-		lastTimeMsec	= nowMsec
-		// call each update function
-		onRenderFcts.forEach(function(onRenderFct){
-			onRenderFct(deltaMsec/1000, nowMsec/1000)
-		})
-	})
-</script><div>Lache un like frere </div></body>
+    requestAnimationFrame(render);
+  }
+
+  requestAnimationFrame(render);
+}
+
+main();
+
+</script>

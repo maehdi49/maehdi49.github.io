@@ -1,0 +1,113 @@
+<!doctype html>
+<title>Vache et couleur</title>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>tracking.js - face with camera</title>
+  <link rel="stylesheet" href="assets/demo.css">
+
+  <script src="tracking-min.js"></script>
+  <script src="face-min.js"></script>
+  <script src="stats.min.js"></script>
+  <script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>
+  <script src="//cdn.rawgit.com/donmccurdy/aframe-extras/v4.1.2/dist/aframe-extras.min.js"></script>
+  <script src="https://jeromeetienne.github.io/AR.js/aframe/build/aframe-ar.js"></script>
+
+  <style>
+  video, canvas {
+    margin-left: 230px;
+    margin-top: 120px;
+    position: absolute;
+  }
+  </style>
+</head>
+<body style='margin : 0px; overflow: hidden; font-family: Monospace;'>
+  <div class="demo-title">
+    <p><a href="http://trackingjs.com" target="_parent">tracking.js</a> － get user's webcam and detect faces</p>
+  </div>
+
+  <a-scene embedded arjs='trackingMethod: best; debugUIEnabled: false;'> 
+    <a-entity light="type: ambient; intensity: 4;"></a-entity>
+    <a-marker type='pattern' url='https://maehdi49.github.io/data/data/patt.epsi'>
+      <a-gltf-model src="https://maehdi49.github.io/data/data/vache_color_001.gltf" 
+        scale="1 1 1" 
+        position="0 0.75 0" 
+        animation-mixer="CubeAction.001"
+      >
+      </a-gltf-model>
+    </a-marker>
+  </a-scene>
+
+  <div class="demo-frame" style="visibility: hidden">
+    <div class="demo-container">
+      <video id="video" width="320" height="240" preload autoplay loop muted></video>
+      <canvas id="canvas" width="320" height="240"></canvas>
+    </div>
+  </div>
+  <script>
+
+  window.onload = function() {
+      var video = document.getElementById('video');
+      var canvas = document.getElementById('canvas');
+      var context = canvas.getContext('2d');
+
+       tracking.ColorTracker.registerColor('purple', function(r, g, b) {
+        var dx = r - 120;
+        var dy = g - 60;
+        var dz = b - 210;
+
+        if ((b - g) >= 100 && (r - g) >= 60) {
+          return true;
+        }
+        return dx * dx + dy * dy + dz * dz < 3500;
+      });
+      var trackerColor =  new tracking.ColorTracker(["magenta", "yellow", "purple"]);
+
+      trackerColor.on('track', function(event) {
+        event.data.forEach(function(rect) {
+        console.log(rect);
+          window.plot(rect.x, rect.y, rect.width, rect.height, rect.color);
+        });
+      });
+
+
+
+       tracking.track('#video', trackerColor);
+
+      var tracker = new tracking.ObjectTracker('face');
+      tracker.setInitialScale(4);
+      tracker.setStepSize(2);
+      tracker.setEdgesDensity(0.1);
+
+      tracking.track('#video', tracker, { camera: true });
+
+      window.plot = function(x, y, w, h, color) {
+        var rect = document.createElement('div');
+        document.querySelector('.demo-container').appendChild(rect);
+        rect.classList.add('rect');
+        rect.style.border = '2px solid ' + color;
+        rect.style.width = w + 'px';
+        rect.style.height = h + 'px';
+        <!--rect.style.left = (img.offsetLeft + x) + 'px';-->
+        <!--rect.style.top = (img.offsetTop + y) + 'px';-->
+      };
+
+      <!--tracker.on('track', function(event) {-->
+        <!--context.clearRect(0, 0, canvas.width, canvas.height);-->
+
+        <!--event.data.forEach(function(rect) {-->
+          <!--context.strokeStyle = '#a64ceb';-->
+          <!--context.strokeRect(rect.x, rect.y, rect.width, rect.height);-->
+          <!--context.font = '11px Helvetica';-->
+          <!--context.fillStyle = "#fff";-->
+          <!--context.fillText('x: ' + rect.x + 'px', rect.x + rect.width + 5, rect.y + 11);-->
+          <!--context.fillText('y: ' + rect.y + 'px', rect.x + rect.width + 5, rect.y + 22);-->
+        <!--});-->
+      <!--});-->
+
+
+    };
+  </script>
+
+</body>
+</html>
